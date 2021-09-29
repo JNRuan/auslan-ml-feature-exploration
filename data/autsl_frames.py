@@ -36,6 +36,12 @@ class CameraMode(Enum):
     DEPTH = 1
 
 
+CAMERA_MODE_MAP = {
+    CameraMode.RGB: 'rgb',
+    CameraMode.DEPTH: 'depth'
+}
+
+
 def construct_frames_dataset(input_path: str,
                              output_path: str,
                              dataset_cat: str,
@@ -58,8 +64,10 @@ def construct_frames_dataset(input_path: str,
     data_path = PurePath(input_path, dataset_cat)
     if mode == CameraMode.DEPTH:
         video_paths = glob.glob(f"{PurePath(data_path, GLOB_PATTERN_DEPTH)}")
+        out_path = PurePath(output_path, 'depth', dataset_cat)
     else:
         video_paths = glob.glob(f"{PurePath(data_path, GLOB_PATTERN_RGB)}")
+        out_path = PurePath(output_path, 'rgb', dataset_cat)
     video_filenames = [os.path.split(p)[1] for p in video_paths]
     sample_names = ["_".join(f.split("_")[:2]) for f in video_filenames]
     class_labels = pd.read_csv(PurePath(input_path, f"{dataset_cat}_labels_en.csv"))
@@ -67,7 +75,6 @@ def construct_frames_dataset(input_path: str,
     print(f"Found {len(video_paths)} videos in {data_path}")
 
     # Setup paths
-    out_path = PurePath(output_path, "rgb", dataset_cat)
     if not Path(out_path).exists():
         os.makedirs(out_path)
 
