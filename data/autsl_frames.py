@@ -36,7 +36,11 @@ class CameraMode(Enum):
     DEPTH = 1
 
 
-def construct_rgb_dataset(input_path: str, output_path: str, dataset_cat: str, fps: str, mode: str):
+def construct_frames_dataset(input_path: str,
+                             output_path: str,
+                             dataset_cat: str,
+                             fps: str,
+                             mode: str):
     """
     Constructs rgb frame dataset from videos in input_path/dataset_cat. E.g., input_path/train.
 
@@ -137,7 +141,7 @@ def main():
     args = arg_parser.parse_args()
 
     validate_args(args)
-    construct_rgb_dataset(args.input, args.output, args.dataset, args.fps, args.mode)
+    construct_frames_dataset(args.input, args.output, args.dataset, args.fps, args.mode)
 
 
 if __name__ == '__main__':
