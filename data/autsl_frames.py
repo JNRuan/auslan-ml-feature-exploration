@@ -106,20 +106,22 @@ def construct_frames_dataset(input_path: str,
 
 
 def validate_args(args):
+    msg = ""
     if not Path(args.input).exists():
         msg = f"Input {args.input} does not exist"
-        raise ValueError(msg)
     if not Path(args.input).is_dir():
         msg = f"Input {args.input} is not a folder."
-        raise ValueError(msg)
     if not Path(args.output).exists():
         msg = f"Output {args.output} does not exist"
-        raise ValueError(msg)
     if not Path(args.output).is_dir():
         msg = f"Output {args.output} is not a folder."
-        raise ValueError(msg)
     if args.dataset not in ['train', 'val', 'test']:
         msg = f"Dataset {args.dataset} not valid, use 'train', 'val', or 'test'"
+    if int(args.fps) <= 0:
+        msg = f"FPS {args.fps} is not valid, must be > 0."
+    if args.mode not in ['0', '1']:
+        msg = f"Mode {args.mode} not valid, must be 0 or 1 (rgb=0, depth=1)."
+    if msg:
         raise ValueError(msg)
 
 
