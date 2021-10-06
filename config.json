@@ -1,0 +1,12 @@
+{
+  "dataRoot": "path/to/data",
+  "trainPath": "train",
+  "trainLabels": "train_labels_en.csv",
+  "valPath": "val",
+  "valLabels": "val_labels_en.csv",
+  "testPath": "test",
+  "testLabels": "test_labels_en.csv",
+  "maxSeqLen": 50,
+  "batchSize": 32,
+  "inputDim": 224
+}

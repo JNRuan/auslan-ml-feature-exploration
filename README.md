@@ -1,8 +1,44 @@
 # Auslan ML Feature Exploration
 
-Honours Project exploring Auslan features in the context of Machine Learning.
+Honours Project code repository for exploring Auslan features in the context of Machine Learning.
 
-## AUTSL videos to rgb frames
+## Configuration
+Create a `config.json` file in the root folder containing:
+
+```json
+{
+  "dataRoot": "path/to/data",
+  "trainPath": "train",
+  "trainLabels": "train_labels_en.csv",
+  "valPath": "val",
+  "valLabels": "val_labels_en.csv",
+  "testPath": "test",
+  "testLabels": "test_labels_en.csv",
+  "maxSeqLen": 50,
+  "batchSize": 32,
+  "inputDim": 224
+}
+```
+**Where data is setup like:**
+```
+data/
+├─ train/
+│  ├─ word1/
+│  │  ├─ sample_001.jpg
+│  │  ├─ sample_00n.jpg
+│  │  ├─ sample2_001.jpg
+│  │  ├─ ...other_sequence_samples
+│  ├─ word2/
+│  ├─ ...other_words/
+train_labels.csv
+```
+`maxSeqLen` allows for padding up to max sequence. `data_utils.py` contains some useful 
+helpers to calculate this. By default, this is set to 50.
+
+`inputDim` based on model requirements for transfer learning (e.g., resnet50, efficientNet, etc)
+
+## Useful Tools, Scripts, etc
+### AUTSL videos to rgb frames
 
 In `data/autsl_frames.py`, script converts AUTSL dataset [1] from mp4 videos to jpg frames
 for each signer and sample, stored under class label folders.
@@ -67,6 +103,15 @@ You can then load these images with class labels as folder names.
 Due to the number of images, will need to batch load and also deal with sequences.
 Sequences will be linked to each signer and sample as per video name. With class labels/words
 as per class label english words in csvs provided by AUTSL dataset.
+
+### ELAR Auslan Dataset video to frames
+ELAR Auslan dataset was pre-processed into frames with the following tool that I created:
+[Elan Vid Slicer](https://github.com/JNRuan/ELAN-vid-slicer)
+
+### Batching sequences of images
+A custom sequence batch generator was created to properly batch large amounts of sequence
+based image data. See `data/img_seq_generator.py` for further details. This requires a csv 
+that maps labels to video sample ids. AUTSL label map csvs can be found in `resources/`.
 
 ## References
 

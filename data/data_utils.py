@@ -27,7 +27,7 @@ def extract_sequence_number(filename: str) -> Tuple[int, str]:
 
 def max_sequence(file_list: List[str]) -> Tuple[int, str]:
     """
-    Get the max sequence length of all images in file_list.
+    Get the max sequence length across all images in file_list.
 
     Args:
         file_list: (List[str]) List of image file names.
@@ -48,6 +48,6 @@ def get_image_files_recursively(path: str, pattern: str = '*.jpg') -> List[str]:
         pattern: Glob pattern of image files, default = '*.jpg'
 
     Returns:
-        (List[str]): List of image filenames found in path.
+        (List[str]): List of image file Path objects found in supplied path.
     """
-    return [img.name for img in Path(path).rglob(pattern)]
+    return [img for img in Path(path).rglob(pattern)]
