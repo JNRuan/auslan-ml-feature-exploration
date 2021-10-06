@@ -111,7 +111,7 @@ ELAR Auslan dataset was pre-processed into frames with the following tool that I
 ### Batching sequences of images
 A custom sequence batch generator was created to properly batch large amounts of sequence
 based image data. See `data/img_seq_generator.py` for further details. This requires a csv 
-that maps labels to video sample ids. AUTSL label map csvs can be found in `resources/`.
+that maps labels to video sample ids. AUTSL label map csvs can be found in `resources/`
 
 ## References
 

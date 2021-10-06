@@ -17,24 +17,6 @@ from data_utils import get_image_files_recursively, max_sequence
 
 ################################################################################
 
-# TODO: Don't hardcode
-ROOT_DATA_PATH = PurePath(r'D:\Uni\Honours\Project\data\autsl')
-VAL_PATH = PurePath(ROOT_DATA_PATH, 'frames_10fps', 'rgb', 'val')
-VAL_CSV = PurePath(ROOT_DATA_PATH, 'val_labels_en.csv')
-
-
-# print(ROOT_DATA_PATH)
-# print(Path(ROOT_DATA_PATH).is_dir())
-# print(VAL_PATH)
-# print(Path(VAL_PATH).is_dir())
-#
-# print('globbing')
-# files = [img.name for img in Path(VAL_PATH).rglob('*.jpg')]
-# print(len(files))
-# print(files[0])
-# print('max len')
-# print(max_sequence(files))
-
 
 class ImageSequenceDataGenerator(tf.keras.utils.Sequence):
     """
@@ -130,6 +112,8 @@ class ImageSequenceDataGenerator(tf.keras.utils.Sequence):
         """
         Get batch[index]. With shape: [batch, n, input_size]
 
+        Labels are one hot encoded with shape [batch, n_labels]
+
         Args:
             index: i'th batch to retrieve.
 
@@ -149,12 +133,3 @@ class ImageSequenceDataGenerator(tf.keras.utils.Sequence):
         Y = self._encode_class_labels(batch)
 
         return np.asarray(X), np.asarray(Y)
-
-
-# df = pd.read_csv(VAL_CSV)
-# max_len = max_sequence(get_image_files_recursively(VAL_PATH))[0]
-# test = ImageSequenceDataGenerator(df, str(VAL_PATH), max_seq_len=max_len)
-# batch_max = len(test)
-# test_batch_first = test[0]
-# test_batch_last = test[batch_max]
-# print()
