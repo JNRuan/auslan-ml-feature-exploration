@@ -39,7 +39,7 @@ def max_sequence(file_list: List[str]) -> Tuple[int, str]:
     return extract_sequence_number(res)
 
 
-def get_image_files_recursively(path: str, pattern: str = '*.jpg') -> List[str]:
+def get_image_files_recursively(path: str, pattern: str = '*.jpg') -> List[Path]:
     """
     Recursively retrieves all image files in a folder.
 
