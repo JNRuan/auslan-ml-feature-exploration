@@ -37,8 +37,8 @@ class ImageSequenceDataGenerator(tf.keras.utils.Sequence):
         """
         self.input_path = input_path
         self.df = dataframe.copy()
-        self.num_samples = len(df)
-        self.class_labels = df['EN'].unique()
+        self.num_samples = len(self.df)
+        self.class_labels = self.df['EN'].unique()
         self.class_labels.sort()
         self.num_labels = len(self.class_labels)
 

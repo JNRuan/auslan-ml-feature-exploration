@@ -1,10 +1,16 @@
 {
   "dataRoot": "path/to/data",
-  "trainPath": "train",
+  "dataFolders": {
+    "dataRGB": "rgb",
+    "dataDepth": "depth",
+    "dataLandmarks": "hand_landmarks",
+    "dataMotion": "motion_history",
+    "dataTrain": "train",
+    "dataVal": "val",
+    "dataTest": "test"
+  },
   "trainLabels": "train_labels_en.csv",
-  "valPath": "val",
   "valLabels": "val_labels_en.csv",
-  "testPath": "test",
   "testLabels": "test_labels_en.csv",
   "maxSeqLen": 50,
   "batchSize": 32,

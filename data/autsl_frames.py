@@ -46,7 +46,7 @@ def construct_frames_dataset(input_path: str,
                              output_path: str,
                              dataset_cat: str,
                              fps: str,
-                             mode: str):
+                             mode: int):
     """
     Constructs rgb frame dataset from videos in input_path/dataset_cat. E.g., input_path/train.
 
@@ -62,7 +62,7 @@ def construct_frames_dataset(input_path: str,
     """
     # Get all videos from input_path/dataset_cat
     data_path = PurePath(input_path, dataset_cat)
-    if mode == CameraMode.DEPTH:
+    if mode == CameraMode.DEPTH.value:
         video_paths = glob.glob(f"{PurePath(data_path, GLOB_PATTERN_DEPTH)}")
         out_path = PurePath(output_path, 'depth', dataset_cat)
     else:
@@ -150,7 +150,7 @@ def main():
     args = arg_parser.parse_args()
 
     validate_args(args)
-    construct_frames_dataset(args.input, args.output, args.dataset, args.fps, args.mode)
+    construct_frames_dataset(args.input, args.output, args.dataset, args.fps, int(args.mode))
 
 
 if __name__ == '__main__':

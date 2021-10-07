@@ -8,11 +8,17 @@ Create a `config.json` file in the root folder containing:
 ```json
 {
   "dataRoot": "path/to/data",
-  "trainPath": "train",
+  "dataFolders": {
+    "dataRGB": "rgb",
+    "dataDepth": "depth",
+    "dataLandmarks": "hand_landmarks",
+    "dataMotion": "motion_history",
+    "dataTrain": "train",
+    "dataVal": "val",
+    "dataTest": "test"
+  },
   "trainLabels": "train_labels_en.csv",
-  "valPath": "val",
   "valLabels": "val_labels_en.csv",
-  "testPath": "test",
   "testLabels": "test_labels_en.csv",
   "maxSeqLen": 50,
   "batchSize": 32,
@@ -21,7 +27,8 @@ Create a `config.json` file in the root folder containing:
 ```
 **Where data is setup like:**
 ```
-data/
+// e.g., "path/to/data/rgb"
+{dataRoot/dataType}/
 ├─ train/
 │  ├─ word1/
 │  │  ├─ sample_001.jpg
@@ -36,6 +43,8 @@ train_labels.csv
 helpers to calculate this. By default, this is set to 50.
 
 `inputDim` based on model requirements for transfer learning (e.g., resnet50, efficientNet, etc)
+
+`batchSize` is the batchsize set for model training, default 32.
 
 ## Useful Tools, Scripts, etc
 ### AUTSL videos to rgb frames
