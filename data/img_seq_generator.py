@@ -15,6 +15,7 @@ import tensorflow as tf
 # Module Imports
 from data_utils import get_image_files_recursively, max_sequence
 
+
 ################################################################################
 
 
@@ -30,7 +31,8 @@ class ImageSequenceDataGenerator(tf.keras.utils.Sequence):
                  max_seq_len: int = 50,
                  batch_size: int = 32,
                  input_size: Tuple[int, int, int] = (224, 224, 3),
-                 shuffle: bool = True):
+                 shuffle: bool = True,
+                 rescale=None):
         """
         Data:
         Expect dataframe to have columns: Sample, EN for sample id, and English class label
@@ -47,6 +49,7 @@ class ImageSequenceDataGenerator(tf.keras.utils.Sequence):
         self.input_size = input_size
         self.max_sequence_size = max_seq_len
         self.shuffle = shuffle
+        self.rescale = rescale
 
     def on_epoch_end(self):
         """
@@ -89,8 +92,8 @@ class ImageSequenceDataGenerator(tf.keras.utils.Sequence):
         Returns:
             (ndarray) Sequence of images with shape [self.max_seq_len, *self.input_size]
         """
-        image_label_path = PurePath(self.input_path, label)
-        image_paths = [str(x) for x in Path(image_label_path).glob('*.jpg') if f'{sample}_' in x.name]
+        image_label_path = Path(self.input_path, label)
+        image_paths = [str(x) for x in image_label_path.glob('*.jpg') if f'{sample}_' in x.name]
         # Load images
         sequence = []
         target_size = self.input_size[:2]
@@ -98,7 +101,9 @@ class ImageSequenceDataGenerator(tf.keras.utils.Sequence):
             with tfimage.load_img(img, target_size=target_size) as image:
                 sequence.append(tfimage.img_to_array(image))
         # Pre-process images
-        sequence = np.asarray(sequence) / 255.
+        sequence = np.asarray(sequence)
+        if self.rescale:
+            sequence /= self.rescale
 
         # Padding
         padding = np.zeros((self.max_sequence_size - sequence.shape[0], *self.input_size), dtype='float32')
@@ -133,3 +138,12 @@ class ImageSequenceDataGenerator(tf.keras.utils.Sequence):
         Y = self._encode_class_labels(batch)
 
         return np.asarray(X), np.asarray(Y)
+
+
+# Bad testing :)
+# PATH = r'D:\Uni\Honours\Project\data\autsl\frames_10fps\rgb\val'
+# df = pd.read_csv(r'D:\Uni\Honours\Project\data\autsl\val_labels_en.csv')
+# generator = ImageSequenceDataGenerator(df, PATH)
+# batch = generator[0]
+# batch = generator[1]
+# print()
