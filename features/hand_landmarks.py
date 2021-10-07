@@ -120,6 +120,7 @@ def get_hand_label(hand_index: int, results):
             return classification.classification[0].index, classification.classification[0].label
     return -1, 'hand'
 
+
 def validate_args(args):
     msg = ""
     if not Path(args.input).exists():
