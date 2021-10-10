@@ -28,7 +28,6 @@ class ImageSequenceDataGenerator(tf.keras.utils.Sequence):
     def __init__(self,
                  dataframe: pd.DataFrame,
                  input_path: str,
-                 max_seq_len: int = 50,
                  batch_size: int = 32,
                  input_size: Tuple[int, int, int] = (224, 224, 3),
                  shuffle: bool = True,
@@ -47,7 +46,6 @@ class ImageSequenceDataGenerator(tf.keras.utils.Sequence):
         # Parameters
         self.batch_size = batch_size
         self.input_size = input_size
-        self.max_sequence_size = max_seq_len
         self.shuffle = shuffle
         self.rescale = rescale
 
@@ -106,8 +104,8 @@ class ImageSequenceDataGenerator(tf.keras.utils.Sequence):
             sequence /= self.rescale
 
         # Padding
-        padding = np.zeros((self.max_sequence_size - sequence.shape[0], *self.input_size), dtype='float32')
-        sequence = np.concatenate((sequence, padding))
+        # padding = np.zeros((self.max_sequence_size - sequence.shape[0], *self.input_size), dtype='float32')
+        # sequence = np.concatenate((sequence, padding))
         return sequence
 
     def __len__(self):
@@ -135,15 +133,26 @@ class ImageSequenceDataGenerator(tf.keras.utils.Sequence):
         for x in batch['Sample']:
             label = batch.loc[batch['Sample'] == x]['EN']
             X.append(self._load_image_sequence(x, label.item()))
+
+        # Ensure batch has the same length of timesteps with padding
+        X_padded = []
+        max_sequence = max(X, key=lambda x: x.shape[0])
+        max_padding = max_sequence.shape[0]
+        for seq in X:
+            padding = np.zeros((max_padding - seq.shape[0], *self.input_size), dtype='float32')
+            new_seq = np.concatenate((seq, padding))
+            X_padded.append(new_seq)
+
+        # Sign gloss/translations
         Y = self._encode_class_labels(batch)
 
-        return np.asarray(X), np.asarray(Y)
+        return np.asarray(X_padded), np.asarray(Y)
 
 
 # Bad testing :)
-# PATH = r'D:\Uni\Honours\Project\data\autsl\frames_10fps\rgb\val'
-# df = pd.read_csv(r'D:\Uni\Honours\Project\data\autsl\val_labels_en.csv')
-# generator = ImageSequenceDataGenerator(df, PATH)
-# batch = generator[0]
-# batch = generator[1]
-# print()
+PATH = r'D:\Uni\Honours\Project\data\autsl\frames_10fps\rgb\val'
+df = pd.read_csv(r'D:\Uni\Honours\Project\data\autsl\val_labels_en.csv')
+generator = ImageSequenceDataGenerator(df, PATH)
+batch = generator[0]
+batch = generator[1]
+print()
