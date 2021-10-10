@@ -46,7 +46,9 @@ class ImageSequenceDataGenerator(tf.keras.utils.Sequence):
         self.shuffle = shuffle
         self.rescale = rescale
 
-        self.len = self.__len__()
+        # Shuffle initial
+        if self.shuffle:
+            self.df = self.df.sample(frac=1).reset_index(drop=True)
 
     def on_epoch_end(self):
         """
@@ -149,6 +151,10 @@ class ImageSequenceDataGenerator(tf.keras.utils.Sequence):
 
     def getitem(self, index):
         return self.__getitem__(index)
+
+
+
+
 
 
 # # Bad testing :)
