@@ -12,9 +12,6 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 
-# Module Imports
-from data_utils import get_image_files_recursively, max_sequence
-
 
 ################################################################################
 
@@ -48,6 +45,8 @@ class ImageSequenceDataGenerator(tf.keras.utils.Sequence):
         self.input_size = input_size
         self.shuffle = shuffle
         self.rescale = rescale
+
+        self.len = self.__len__()
 
     def on_epoch_end(self):
         """
@@ -148,11 +147,14 @@ class ImageSequenceDataGenerator(tf.keras.utils.Sequence):
 
         return np.asarray(X_padded), np.asarray(Y)
 
+    def getitem(self, index):
+        return self.__getitem__(index)
 
-# Bad testing :)
-PATH = r'D:\Uni\Honours\Project\data\autsl\frames_10fps\rgb\val'
-df = pd.read_csv(r'D:\Uni\Honours\Project\data\autsl\val_labels_en.csv')
-generator = ImageSequenceDataGenerator(df, PATH)
-batch = generator[0]
-batch = generator[1]
-print()
+
+# # Bad testing :)
+# PATH = r'D:\Uni\Honours\Project\data\autsl\frames_10fps\rgb\val'
+# df = pd.read_csv(r'D:\Uni\Honours\Project\data\autsl\val_labels_en.csv')
+# generator = ImageSequenceDataGenerator(df, PATH)
+# batch = generator[0]
+# batch = generator[1]
+# print()
