@@ -1,18 +1,14 @@
 {
-  "dataRoot": "path/to/data",
-  "dataFolders": {
-    "dataRGB": "rgb",
-    "dataDepth": "depth",
-    "dataLandmarks": "hand_landmarks",
-    "dataMotion": "motion_history",
-    "dataTrain": "train",
-    "dataVal": "val",
-    "dataTest": "test"
-  },
-  "trainLabels": "train_labels_en.csv",
-  "valLabels": "val_labels_en.csv",
-  "testLabels": "test_labels_en.csv",
-  "maxSeqLen": 50,
-  "batchSize": 32,
-  "inputDim": 224
+  "trainLabels": "train_labels_20classes.csv",
+  "valLabels": "val_labels_20classes.csv",
+  "testLabels": "test_labels_20classes.csv",
+  "efficientNet": 0,
+  "fineTune": false,
+  "batchSize": 8,
+  "inputDim": 224,
+  "lstm": 256,
+  "dense": 128,
+  "dropout": 0.5,
+  "numClasses": 20,
+  "maxEpochs": 100
 }
