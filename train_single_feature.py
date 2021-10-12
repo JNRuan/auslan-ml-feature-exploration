@@ -11,6 +11,9 @@ from tensorflow.keras import Model
 
 import argparse
 import json
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+ROOT_DIR = os.path.dirname(__file__)
 import pandas as pd
 import tensorflow as tf
 
@@ -116,7 +119,7 @@ def set_early_stop_callback(patience, monitor='val_loss'):
     return tf.keras.callbacks.EarlyStopping(monitor=monitor, patience=patience)
 
 
-def run_trials(input_path: Path, output_path: Path, num_trials: int, trial_start: int, config):
+def run_trials(input_path: Path, output_path: Path, num_trials: int, trial_start: int, ef_net_model: int, config):
     output_runs_path = Path(output_path, "runs")
     input_train = Path(input_path, "train")
     input_val = Path(input_path, "val")
@@ -130,7 +133,7 @@ def run_trials(input_path: Path, output_path: Path, num_trials: int, trial_start
     time_dist_shape = (None, input_dim, input_dim, 3)
     num_classes = config['numClasses']
     batch_size = config['batchSize']
-    enet_model = config['efficientNet']
+    enet_model = ef_net_model
     lstm_units = config['lstm']
     dense_units = config['dense']
     dropout_value = config['dropout']
@@ -141,6 +144,7 @@ def run_trials(input_path: Path, output_path: Path, num_trials: int, trial_start
 
     for i in range(num_trials):
         trial_num = i + trial_start
+        print(f"Running trial {trial_num}, {i+1}/{num_trials}.")
         model = single_feature_model(num_classes,
                                      model_num=enet_model,
                                      input_shape=input_shape,
@@ -190,7 +194,7 @@ def validate_args(args):
 
 
 def main():
-    arg_parser = argparse.ArgumentParser(description="AUTSL Frames Data Creation")
+    arg_parser = argparse.ArgumentParser(description="Single feature trainer")
     arg_parser.add_argument('-i',
                             '--input',
                             help='Dataset input root path, e.g., path/to/data',
@@ -207,25 +211,33 @@ def main():
                             '--trial_start',
                             help="Starting number of trial filename, e.g., 1",
                             default=1)
+    arg_parser.add_argument('-en',
+                            '--ef_net',
+                            help="Efficient net version, e.g. 0 fo B0, range [0, 7]",
+                            default=0)
     args = arg_parser.parse_args()
 
     validate_args(args)
 
-    with open('config.json') as json_file:
+    config_path = Path(ROOT_DIR, 'config.json')
+    print(f"Config Path: {config_path}")
+    with open(config_path) as json_file:
         config = json.load(json_file)
         print(f"Loaded config: {config}")
 
     physical_devices = tf.config.experimental.list_physical_devices('GPU')
-    tf.config.experimental.set_memory_growth(physical_devices[0], True)
-    tf.get_logger().setLevel('WARNING')
-    print("Set memory growth for GPU.")
+    if physical_devices:
+        tf.config.experimental.set_memory_growth(physical_devices[0], True)
+        print("Set memory growth for GPU.")
 
     print(f"Running {args.ntrials} trials.")
     run_trials(Path(str(args.input)),
                Path(str(args.output)),
                int(args.ntrials),
                int(args.trial_start),
-               config)
+               int(args.ef_net),
+               config
+               )
 
 
 if __name__ == '__main__':

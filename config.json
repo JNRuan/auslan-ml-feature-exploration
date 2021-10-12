@@ -2,7 +2,6 @@
   "trainLabels": "train_labels_20classes.csv",
   "valLabels": "val_labels_20classes.csv",
   "testLabels": "test_labels_20classes.csv",
-  "efficientNet": 0,
   "fineTune": false,
   "batchSize": 8,
   "inputDim": 224,
