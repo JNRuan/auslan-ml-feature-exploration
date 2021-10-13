@@ -5,6 +5,7 @@
   "fineTune": false,
   "batchSize": 8,
   "inputDim": 224,
+  "numLstm": 2,
   "lstm": 256,
   "dense": 128,
   "dropout": 0.5,

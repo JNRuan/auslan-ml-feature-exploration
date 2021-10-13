@@ -71,7 +71,10 @@ class ImageSequenceDataGenerator(tf.keras.utils.Sequence):
             A binary matrix representation of the input.
             The classes axis is placed last. (shape=[batch, num_classes]
         """
+        # labels_indices: Index in class_labels for this batch eleemnts labels
         labels_indices = [np.where(self.class_labels == label)[0] for label in batch['EN']]
+        # One hot encoding, for example if batch[0] == garden, garden is idx 6 in class_labels
+        # Then we get encoded [[0, 0, 0, 0, 0, 0, 1, 0, ..., 0], [...], ..., [...]]
         return tf.keras.utils.to_categorical(labels_indices, num_classes=self.num_labels)
 
     def _load_image_sequence(self, sample: str, label: str) -> np.ndarray:
@@ -152,14 +155,11 @@ class ImageSequenceDataGenerator(tf.keras.utils.Sequence):
     def getitem(self, index):
         return self.__getitem__(index)
 
-
-
-
-
-
+#
+#
 # # Bad testing :)
-# PATH = r'D:\Uni\Honours\Project\data\autsl\frames_10fps\rgb\val'
-# df = pd.read_csv(r'D:\Uni\Honours\Project\data\autsl\val_labels_en.csv')
+# PATH = r'D:\Uni\Honours\Project\data\autsl\frames_rgb_20\val'
+# df = pd.read_csv(r'D:\Uni\Honours\Project\data\autsl\frames_rgb_20\val_labels_20classes.csv')
 # generator = ImageSequenceDataGenerator(df, PATH)
 # batch = generator[0]
 # batch = generator[1]

@@ -34,18 +34,19 @@ def get_data(df,
                                            input_size=input_shape,
                                            shuffle=shuffle)
 
-    def get_generator():
-        for i in range(len(generator)):
-            yield generator.getitem(i)
-
-    dataset = tf.data.Dataset.from_generator(
-        get_generator,
-        output_signature=(
-            tf.TensorSpec(shape=(None, *time_dist_shape), dtype=tf.float32),
-            tf.TensorSpec(shape=(None, 20), dtype=tf.float32)
-        )
-    )
-    return dataset
+    # Did not seem to improve.
+    # def get_generator():
+    #     for i in range(len(generator)):
+    #         yield generator.getitem(i)
+    #
+    # dataset = tf.data.Dataset.from_generator(
+    #     get_generator,
+    #     output_signature=(
+    #         tf.TensorSpec(shape=(None, *time_dist_shape), dtype=tf.float32),
+    #         tf.TensorSpec(shape=(None, 20), dtype=tf.float32)
+    #     )
+    # )
+    return generator
 
 
 def get_efficientnet(model_num=0, input_size=(224, 224, 3), finetune=False, tune_layers=3):
@@ -83,6 +84,7 @@ def single_feature_model(num_classes,
                          time_dist_shape=(None, 224, 224, 3),
                          dropout=0.5,
                          dense_n=128,
+                         num_lstm=1,
                          lstm_n=256,
                          finetune=False,
                          tune_layers=3):
@@ -98,8 +100,12 @@ def single_feature_model(num_classes,
     efficient_out = TimeDistributed(GlobalAveragePooling2D())(efficient_layer)
 
     # LSTM Sequence Layer
-    lstm = LSTM(lstm_n)(efficient_out)
-    fc = Dense(dense_n, activation='relu')(lstm)
+    if num_lstm == 2:
+        lstm_start = LSTM(lstm_n, return_sequences=True)(efficient_out)
+        lstm_out = LSTM(lstm_n)(lstm_start)
+    else:
+        lstm_out = LSTM(lstm_n)(efficient_out)
+    fc = Dense(dense_n, activation='relu')(lstm_out)
     fc_out = Dropout(dropout)(fc)
     output = Dense(num_classes, activation='softmax')(fc_out)
 
@@ -134,6 +140,7 @@ def run_trials(input_path: Path, output_path: Path, num_trials: int, trial_start
     num_classes = config['numClasses']
     batch_size = config['batchSize']
     enet_model = ef_net_model
+    num_lstm = config['numLstm']
     lstm_units = config['lstm']
     dense_units = config['dense']
     dropout_value = config['dropout']
@@ -151,6 +158,7 @@ def run_trials(input_path: Path, output_path: Path, num_trials: int, trial_start
                                      time_dist_shape=time_dist_shape,
                                      dropout=dropout_value,
                                      dense_n=dense_units,
+                                     num_lstm=num_lstm,
                                      lstm_n=lstm_units)
 
         run_log = f'training_rgb_{trial_num:03}.csv'
@@ -173,10 +181,13 @@ def run_trials(input_path: Path, output_path: Path, num_trials: int, trial_start
             x=train_dataset,
             validation_data=val_dataset,
             epochs=max_epochs,
-            callbacks=[early_stop_callback, csv_callback, checkpoint],
-            workers=10,
-            use_multiprocessing=True
+            callbacks=[early_stop_callback, csv_callback, checkpoint]
+            # workers=8,
+            # use_multiprocessing=False
         )
+        print(f"Completed trial {trial_num}.")
+
+    print(f"Completed {num_trials} trials.")
 
 
 def validate_args(args):
