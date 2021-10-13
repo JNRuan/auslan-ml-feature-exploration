@@ -226,11 +226,15 @@ def main():
                             '--ef_net',
                             help="Efficient net version, e.g. 0 fo B0, range [0, 7]",
                             default=0)
+    arg_parser.add_argument('-c',
+                            '--config',
+                            help="Config file, default=config.json",
+                            default="config.json")
     args = arg_parser.parse_args()
 
     validate_args(args)
 
-    config_path = Path(ROOT_DIR, 'config.json')
+    config_path = Path(ROOT_DIR, str(args.config))
     print(f"Config Path: {config_path}")
     with open(config_path) as json_file:
         config = json.load(json_file)
