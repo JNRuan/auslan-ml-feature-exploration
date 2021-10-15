@@ -46,17 +46,21 @@ def process_optical_flow(output: Path, label_path: Path, label: str, mode: str):
     pbar = tqdm(image_list)
     print(f"Found: {len(image_list)} images.")
 
+    # Setup algorithm
     old_frame = cv2.imread(str(image_list[0]))
     hsv = np.zeros_like(old_frame)
     hsv[..., 1] = 255
-    old_frame = cv2.cvtColor(old_frame, cv2.COLOR_BGR2GRAY)
+    if mode == 'farneback':
+        old_frame = cv2.cvtColor(old_frame, cv2.COLOR_BGR2GRAY)
+
+    # Process sequence optical flow
     for img in pbar:
         new_frame = cv2.imread(str(img))
-        new_frame = cv2.cvtColor(new_frame, cv2.COLOR_BGR2GRAY)
         if mode == 'rlof':
-            # Apply RLOF
+            # Apply RLOF - does not need grayscale.
             flow = cv2.optflow.calcOpticalFlowDenseRLOF(old_frame, new_frame, None, *[])
         else:
+            new_frame = cv2.cvtColor(new_frame, cv2.COLOR_BGR2GRAY)
             # Apply Farneback with default params
             flow = cv2.calcOpticalFlowFarneback(old_frame, new_frame, None, 0.5, 3, 15, 3, 5, 1.2, 0)
 
@@ -68,6 +72,8 @@ def process_optical_flow(output: Path, label_path: Path, label: str, mode: str):
 
         # HSV to RGB
         rgb = cv2.cvtColor(hsv, cv2.COLOR_HSV2RGB)
+
+        # Save current frame and continue
         image_file_path = Path(image_out_path, img.name)
         cv2.imwrite(str(image_file_path), rgb)
         old_frame = new_frame
