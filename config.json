@@ -12,5 +12,6 @@
   "dense": 512,
   "dropout": 0.5,
   "numClasses": 20,
-  "maxEpochs": 5
+  "maxEpochs": 100,
+  "patience": 5
 }

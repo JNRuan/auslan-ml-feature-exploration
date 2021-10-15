@@ -97,6 +97,7 @@ def run_trials(input_path: Path,
     dense_units = config['dense']
     dropout_value = config['dropout']
     max_epochs = config['maxEpochs']
+    patience = config['patience']
 
     train_dataset = get_multi_generators(train_df, [rgb_train, depth_train], input_shape, batch_size, shuffle=True)
     val_dataset = get_multi_generators(val_df, [rgb_val, depth_val], input_shape, batch_size, shuffle=False)
@@ -120,7 +121,7 @@ def run_trials(input_path: Path,
         with open(Path(output_runs_path, run_model_summary), 'w') as f:
             model.summary(print_fn=lambda x: f.write(x + '\n'))
 
-        early_stop_callback = set_early_stop_callback(5)
+        early_stop_callback = set_early_stop_callback(patience)
         csv_callback = set_csv_callback(output_runs_path, run_log)
         checkpoint = tf.keras.callbacks.ModelCheckpoint(filepath=Path(output_runs_path, model_checkpoint),
                                                         monitor='val_loss',
