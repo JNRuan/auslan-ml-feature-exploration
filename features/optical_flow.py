@@ -3,12 +3,12 @@
 Generates optical flow for all class labels and outputs to a new data sub folder.
 
 Run: python optical_flow.py -i path/to/data -o path/to/output [-d 'train' or 'val' or 'test']
-e.g., python optical_flow.py -i "~/datasets/autsl" -o "~/datasets/autsl_hand_landmarks" -d "test"
+e.g., python optical_flow.py -i "~/datasets/data" -o "~/datasets/data_optical_flow" -d "test"
 
-This will create landmarks for all class labels under datasets/autsl/test,
+This will create optical flow sequences for all class labels under datasets/data/test,
 assuming labels are folders (eg., datasets/autsl/test/word)
 
-Output becomes datasets/autsl_hand_landmarks/test/word
+Output becomes datasets/data_optical_flow/test/word
 
 Adapted from: https://learnopencv.com/optical-flow-in-opencv/#dense-optical-flow
 """
@@ -22,20 +22,22 @@ import numpy as np
 
 ################################################################################
 
-def create_optical_flow(input: str, output: str, dataset: str):
+
+def create_optical_flow(input: str, output: str, dataset: str, mode: str):
     dataset_path = Path(input, dataset)
     output_path = Path(output, dataset)
     if not output_path.exists():
         os.makedirs(output_path)
     label_folders = [folder for folder in dataset_path.iterdir() if folder.is_dir()]
     print(f"Found: {len(label_folders)} class labels to process.")
+    print(f"Optical flow mode: {mode}")
 
     for label_path in label_folders:
         print(f"Processing: {label_path.name}")
-        process_optical_flow(output_path, label_path, label_path.name)
+        process_optical_flow(output_path, label_path, label_path.name, str(mode))
 
 
-def process_optical_flow(output: Path, label_path: Path, label: str):
+def process_optical_flow(output: Path, label_path: Path, label: str, mode: str):
     image_out_path = Path(output, label)
     if not image_out_path.exists():
         os.makedirs(image_out_path)
@@ -51,12 +53,14 @@ def process_optical_flow(output: Path, label_path: Path, label: str):
     for img in pbar:
         new_frame = cv2.imread(str(img))
         new_frame = cv2.cvtColor(new_frame, cv2.COLOR_BGR2GRAY)
-        # Apply RLOF
-        # flow = cv2.optflow.calcOpticalFlowDenseRLOF(old_frame, new_frame, None, *[])
-        # Apply Farneback
-        flow = cv2.calcOpticalFlowFarneback(old_frame, new_frame, None, 0.5, 3, 15, 3, 5, 1.2, 0)
-        # Polar Coordinates
+        if mode == 'rlof':
+            # Apply RLOF
+            flow = cv2.optflow.calcOpticalFlowDenseRLOF(old_frame, new_frame, None, *[])
+        else:
+            # Apply Farneback with default params
+            flow = cv2.calcOpticalFlowFarneback(old_frame, new_frame, None, 0.5, 3, 15, 3, 5, 1.2, 0)
 
+        # Polar Coordinates
         mag, ang = cv2.cartToPolar(flow[..., 0], flow[..., 1])
         # Encode with HSV
         hsv[..., 0] = ang * 180 / np.pi / 2
@@ -81,6 +85,8 @@ def validate_args(args):
         msg = f"Output {args.output} is not a folder."
     if args.dataset not in ['train', 'val', 'test']:
         msg = f"Dataset {args.dataset} not valid, use 'train', 'val', or 'test'"
+    if args.mode not in ['farneback', 'rlof']:
+        msg = f"Mode {args.mode} not valid, only 'farneback' or 'rlof' is supported."
     if msg:
         raise ValueError(msg)
 
@@ -99,9 +105,13 @@ def main():
                             '--dataset',
                             help='[Optional] Dataset to use, eg., train or val or test, default=train',
                             default='train')
+    arg_parser.add_argument('-m',
+                            '--mode',
+                            help="Set optical flow mode, farneback || rlof",
+                            default='farneback')
     args = arg_parser.parse_args()
     validate_args(args)
-    create_optical_flow(args.input, args.output, args.dataset)
+    create_optical_flow(args.input, args.output, args.dataset, args.mode)
 
 
 if __name__ == '__main__':
