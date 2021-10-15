@@ -60,6 +60,10 @@ class ImageSequenceDataGenerator(tf.keras.utils.Sequence):
         if self.shuffle:
             self.df = self.df.sample(frac=1).reset_index(drop=True)
 
+    def shuffle_dataset_from_parent(self, df):
+        """Simply replaces current dataframe with shuffled dataframe"""
+        self.df = df.copy()
+
     def _encode_class_labels(self, batch: pd.DataFrame) -> np.ndarray:
         """
         Creates categorical one hot encoded label matrix for batch.
@@ -155,12 +159,58 @@ class ImageSequenceDataGenerator(tf.keras.utils.Sequence):
     def getitem(self, index):
         return self.__getitem__(index)
 
-#
-#
+
+class MultiSequenceGenerator(tf.keras.utils.Sequence):
+    """
+    Combines multiple sequence generators.
+
+    Note that all generators must have shuffle set to False as parent will control shuffle.
+    """
+    def __init__(self, df, generators, shuffle=True):
+        self.df = df.copy()
+        self.generators = generators
+        self.shuffle = shuffle
+        if self.shuffle:
+            self.shuffle_datasets()
+
+    def shuffle_datasets(self):
+        self.df = self.df.sample(frac=1).reset_index(drop=True)
+        for gen in self.generators:
+            gen.shuffle_dataset_from_parent(self.df)
+
+    def on_epoch_end(self):
+        self.shuffle_datasets()
+
+    def __len__(self):
+        """Length of all datasets should match first generator and be consistent"""
+        return len(self.generators[0])
+
+    def __getitem__(self, index: int):
+        """
+        Returns np.array of all generator X values, and the associated Y value for all.
+
+        ie., [genx1, genx2, ...], geny1
+        Args:
+            index: index of batch
+
+        Returns:
+            [gen1_X, gen2_X, ..., genN_X], Y
+        """
+        # [(X1, Y1), (X2, Y2), ...]
+        batch = [gen.getitem(index) for gen in self.generators]
+        X = np.asarray([X for (X, Y) in batch])
+        Y = np.asarray([Y for (X, Y) in batch])
+        return X, Y
+
+
 # # Bad testing :)
-# PATH = r'D:\Uni\Honours\Project\data\autsl\frames_rgb_20\val'
-# df = pd.read_csv(r'D:\Uni\Honours\Project\data\autsl\frames_rgb_20\val_labels_20classes.csv')
-# generator = ImageSequenceDataGenerator(df, PATH)
-# batch = generator[0]
-# batch = generator[1]
+# PATH = r'C:\path\frames_rgb_20\val'
+# DEPTH_PATH = r'C:\path\frames_depth_20\val'
+# df = pd.read_csv(r'C:\path\frames_rgb_20\val_labels_20classes.csv')
+# generator1 = ImageSequenceDataGenerator(df, PATH, shuffle=False)
+# generator2 = ImageSequenceDataGenerator(df, DEPTH_PATH, shuffle=False)
+# multi_gen = MultiSequenceGenerator(df, [generator1, generator2], shuffle=True)
+# batch0 = multi_gen[0]
+# batch1 = multi_gen[1]
+# batchN = multi_gen[len(multi_gen)]
 # print()
