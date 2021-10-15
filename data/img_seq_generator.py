@@ -198,8 +198,8 @@ class MultiSequenceGenerator(tf.keras.utils.Sequence):
         """
         # [(X1, Y1), (X2, Y2), ...]
         batch = [gen.getitem(index) for gen in self.generators]
-        X = np.asarray([X for (X, Y) in batch])
-        Y = np.asarray([Y for (X, Y) in batch])
+        X = [X for (X, Y) in batch]
+        Y = batch[0][1]
         return X, Y
 
 
