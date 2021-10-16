@@ -73,7 +73,7 @@ def process_hand_landmarks(output: str, label_path: str, label_name: str, csv_pa
     with mp_hands.Hands(
             static_image_mode=True,
             max_num_hands=2,
-            min_detection_confidence=0.5) as hands:
+            min_detection_confidence=0.3) as hands:
         for file in pbar:
             # Mediapipe needs image flipped for processing
             image = cv2.flip(cv2.imread(str(file)), 1)

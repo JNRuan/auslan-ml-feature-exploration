@@ -148,6 +148,9 @@ class ImageSequenceDataGenerator(tf.keras.utils.Sequence):
         max_padding = max_sequence.shape[0]
         for seq in X:
             padding = np.zeros((max_padding - seq.shape[0], *self.input_size), dtype='float32')
+            if len(padding.shape) != len(seq.shape):
+                print(seq.shape)
+                print(padding.shape)
             new_seq = np.concatenate((seq, padding))
             X_padded.append(new_seq)
 
@@ -199,18 +202,56 @@ class MultiSequenceGenerator(tf.keras.utils.Sequence):
         # [(X1, Y1), (X2, Y2), ...]
         batch = [gen.getitem(index) for gen in self.generators]
         X = [X for (X, Y) in batch]
+        # Ensure sequence lengths match, first X is always RGB sequence.
+        max_seq_len = X[0].shape[1]
+        for i, batched_seq in enumerate(X):
+            if batched_seq.shape[1] < max_seq_len:
+                # This batch needs padding
+                new_batch = []
+                for seq in batched_seq:
+                    padding = np.zeros(
+                        (max_seq_len - seq.shape[0], *self.generators[0].input_size),
+                        dtype='float32')
+                    new_seq = np.concatenate((seq, padding))
+                    new_batch.append(new_seq)
+                X[i] = np.asarray(new_batch)
         Y = batch[0][1]
         return X, Y
 
 
 # # Bad testing :)
-# PATH = r'C:\path\frames_rgb_20\val'
-# DEPTH_PATH = r'C:\path\frames_depth_20\val'
-# df = pd.read_csv(r'C:\path\frames_rgb_20\val_labels_20classes.csv')
+# PATH = r'path\to\frames_rgb_20\val'
+# DEPTH_PATH = r'path\to\frames_depth_20\val'
+# LANDMARKS_PATH = r'path\to\frames_landmarks_2_20\val'
+# OPTICAL_PATH = r'path\to\frames_optical_20\val'
+# OPTICAL_RLOF_PATH = r'path\to\frames_optical_rlof_20\val'
+# df = pd.read_csv(r'path\to\val_labels_20classes.csv')
 # generator1 = ImageSequenceDataGenerator(df, PATH, shuffle=False)
 # generator2 = ImageSequenceDataGenerator(df, DEPTH_PATH, shuffle=False)
-# multi_gen = MultiSequenceGenerator(df, [generator1, generator2], shuffle=True)
+# generator3 = ImageSequenceDataGenerator(df, OPTICAL_PATH, shuffle=False)
+# generator4 = ImageSequenceDataGenerator(df, OPTICAL_RLOF_PATH, shuffle=False)
+# generator5 = ImageSequenceDataGenerator(df, LANDMARKS_PATH, shuffle=False)
+# multi_gen = MultiSequenceGenerator(df, [generator1, generator2, generator3, generator4, generator5], shuffle=False)
 # batch0 = multi_gen[0]
-# batch1 = multi_gen[1]
-# batchN = multi_gen[len(multi_gen)]
+# # batch1 = multi_gen[1]
+# # batchN = multi_gen[len(multi_gen)]
+# import matplotlib.pyplot as plt
+# fig, ax = plt.subplots(5, 5, figsize=(16, 9))
+# # batch0[0=X] [0-3] [batch item] [seq item] [channels...]
+# seq_len = 5  # First 5
+# scale = 255.
+# for i in range(seq_len):
+#     ax[0, i].imshow(batch0[0][0][0][i]/scale)
+#     ax[1, i].imshow(batch0[0][1][0][i]/scale)
+#     ax[2, i].imshow(batch0[0][2][0][i]/scale)
+#     ax[3, i].imshow(batch0[0][3][0][i]/scale)
+#     ax[4, i].imshow(batch0[0][4][0][i] / scale)
+#
+# for i in range(5):
+#     for j in range(seq_len):
+#         ax[i][j].get_yaxis().set_ticks([])
+#         ax[i][j].get_xaxis().set_ticks([])
+# plt.show()
+# fig.savefig('fig1.png', dpi=300)
+#
 # print()
