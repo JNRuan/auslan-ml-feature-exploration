@@ -23,7 +23,7 @@ import numpy as np
 ################################################################################
 
 
-def create_optical_flow(input: str, output: str, dataset: str, mode: str):
+def create_optical_flow(input: str, output: str, dataset: str, mode: str, resize: int, width: int, height: int):
     dataset_path = Path(input, dataset)
     output_path = Path(output, dataset)
     if not output_path.exists():
@@ -34,10 +34,10 @@ def create_optical_flow(input: str, output: str, dataset: str, mode: str):
 
     for label_path in label_folders:
         print(f"Processing: {label_path.name}")
-        process_optical_flow(output_path, label_path, label_path.name, str(mode))
+        process_optical_flow(output_path, label_path, label_path.name, str(mode), int(resize), int(width), int(height))
 
 
-def process_optical_flow(output: Path, label_path: Path, label: str, mode: str):
+def process_optical_flow(output: Path, label_path: Path, label: str, mode: str, resize: int, w: int, h: int):
     image_out_path = Path(output, label)
     if not image_out_path.exists():
         os.makedirs(image_out_path)
@@ -48,6 +48,8 @@ def process_optical_flow(output: Path, label_path: Path, label: str, mode: str):
 
     # Setup algorithm
     old_frame = cv2.imread(str(image_list[0]))
+    if resize:
+        old_frame = cv2.resize(old_frame, (w, h), interpolation=cv2.INTER_AREA)
     hsv = np.zeros_like(old_frame)
     hsv[..., 1] = 255
     if mode == 'farneback':
@@ -56,6 +58,8 @@ def process_optical_flow(output: Path, label_path: Path, label: str, mode: str):
     # Process sequence optical flow
     for img in pbar:
         new_frame = cv2.imread(str(img))
+        if resize:
+            new_frame = cv2.resize(new_frame, (w, h), interpolation=cv2.INTER_AREA)
         if mode == 'rlof':
             # Apply RLOF - does not need grayscale.
             flow = cv2.optflow.calcOpticalFlowDenseRLOF(old_frame, new_frame, None, *[])
@@ -115,9 +119,21 @@ def main():
                             '--mode',
                             help="Set optical flow mode, farneback || rlof",
                             default='farneback')
+    arg_parser.add_argument('-r',
+                            '--resize',
+                            help="Set 1 if resize of images desired, good for inconsistent datasets.",
+                            default=0)
+    arg_parser.add_argument('-w',
+                            '--width',
+                            help="Set width for resize",
+                            default=512)
+    arg_parser.add_argument('-h',
+                            '--height',
+                            help="Set height for resize",
+                            default=512)
     args = arg_parser.parse_args()
     validate_args(args)
-    create_optical_flow(args.input, args.output, args.dataset, args.mode)
+    create_optical_flow(args.input, args.output, args.dataset, args.mode, args.resize, args.width, args.height)
 
 
 if __name__ == '__main__':
