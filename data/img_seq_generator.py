@@ -227,38 +227,36 @@ class MultiSequenceGenerator(tf.keras.utils.Sequence):
 
 
 # # Bad testing :)
-# PATH = r'path\to\frames_rgb_20\val'
-# DEPTH_PATH = r'path\to\frames_depth_20\val'
-# LANDMARKS_PATH = r'path\to\frames_landmarks_2_20\val'
-# OPTICAL_PATH = r'path\to\frames_optical_20\val'
-# OPTICAL_RLOF_PATH = r'path\to\frames_optical_rlof_20\val'
-# df = pd.read_csv(r'path\to\val_labels_20classes.csv')
+# PATH = r'path\data\autsl\frames_rgb_20\val'
+# DEPTH_PATH = r'path\autsl\frames_depth_20\val'
+# LANDMARKS_PATH = r'path\autsl\frames_landmarks_2_20\val'
+# OPTICAL_RLOF_PATH = r'path\autsl\frames_optical_rlof_20\val'
+# df = pd.read_csv(r'path\autsl\val_labels_20classes.csv')
 # generator1 = ImageSequenceDataGenerator(df, PATH, shuffle=False)
 # generator2 = ImageSequenceDataGenerator(df, DEPTH_PATH, shuffle=False)
-# generator3 = ImageSequenceDataGenerator(df, OPTICAL_PATH, shuffle=False)
-# generator4 = ImageSequenceDataGenerator(df, OPTICAL_RLOF_PATH, shuffle=False)
-# generator5 = ImageSequenceDataGenerator(df, LANDMARKS_PATH, shuffle=False)
-# multi_gen = MultiSequenceGenerator(df, [generator1, generator2, generator3, generator4, generator5], shuffle=False)
+# generator3 = ImageSequenceDataGenerator(df, OPTICAL_RLOF_PATH, shuffle=False)
+# generator4 = ImageSequenceDataGenerator(df, LANDMARKS_PATH, shuffle=False)
+# multi_gen = MultiSequenceGenerator(df, [generator1, generator2, generator3, generator4], shuffle=True)
 # batch0 = multi_gen[0]
 # # batch1 = multi_gen[1]
 # # batchN = multi_gen[len(multi_gen)]
 # import matplotlib.pyplot as plt
-# fig, ax = plt.subplots(5, 5, figsize=(16, 9))
-# # batch0[0=X] [0-3] [batch item] [seq item] [channels...]
 # seq_len = 5  # First 5
+# fig, ax = plt.subplots(4, seq_len, figsize=(16, 9))
 # scale = 255.
-# for i in range(seq_len):
-#     ax[0, i].imshow(batch0[0][0][0][i]/scale)
-#     ax[1, i].imshow(batch0[0][1][0][i]/scale)
-#     ax[2, i].imshow(batch0[0][2][0][i]/scale)
-#     ax[3, i].imshow(batch0[0][3][0][i]/scale)
-#     ax[4, i].imshow(batch0[0][4][0][i] / scale)
+# offset = 0
+# # batch0[0=X] [0-3] [batch item] [seq item] [channels...]
+# for i in range(offset, seq_len+offset):
+#     ax[0, i-offset].imshow(batch0[0][0][7][i]/scale)
+#     ax[1, i-offset].imshow(batch0[0][1][7][i]/scale)
+#     ax[2, i-offset].imshow(batch0[0][2][7][i]/scale)
+#     ax[3, i-offset].imshow(batch0[0][3][7][i]/scale)
 #
-# for i in range(5):
+# for i in range(4):
 #     for j in range(seq_len):
 #         ax[i][j].get_yaxis().set_ticks([])
 #         ax[i][j].get_xaxis().set_ticks([])
 # plt.show()
-# fig.savefig('fig1.png', dpi=300)
+# fig.savefig('fig2.png', dpi=300)
 #
 # print()
