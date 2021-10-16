@@ -140,7 +140,8 @@ class ImageSequenceDataGenerator(tf.keras.utils.Sequence):
         X = []
         for x in batch['Sample']:
             label = batch.loc[batch['Sample'] == x]['EN']
-            X.append(self._load_image_sequence(x, label.item()))
+            img_seq = self._load_image_sequence(x, label.item())
+            X.append(img_seq)
 
         # Ensure batch has the same length of timesteps with padding
         X_padded = []
@@ -148,10 +149,16 @@ class ImageSequenceDataGenerator(tf.keras.utils.Sequence):
         max_padding = max_sequence.shape[0]
         for seq in X:
             padding = np.zeros((max_padding - seq.shape[0], *self.input_size), dtype='float32')
-            if len(padding.shape) != len(seq.shape):
-                print(seq.shape)
-                print(padding.shape)
-            new_seq = np.concatenate((seq, padding))
+            # if len(padding.shape) != len(seq.shape):
+            #     print("Error seq and padding:")
+            #     print(seq.shape)
+            #     print(padding.shape)
+            #     print(f"Input path: {self.input_path}")
+            if len(seq.shape) != len(padding.shape):
+                # Hotfix for no landmarks found!! So just make zeros for now. TODO: Remake data
+                new_seq = np.zeros((max_padding, *self.input_size), dtype='float32')
+            else:
+                new_seq = np.concatenate((seq, padding))
             X_padded.append(new_seq)
 
         # Sign gloss/translations
