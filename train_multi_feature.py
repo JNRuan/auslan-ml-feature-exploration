@@ -74,7 +74,8 @@ def multi_rgb_depth_model(num_classes,
     return model
 
 
-def build_rdol_model(num_classes,
+def build_four_model(num_classes,
+                     input_names,
                      model_num=0,
                      input_shape=(224, 224, 3),
                      time_dist_shape=(None, 224, 224, 3),
@@ -90,29 +91,26 @@ def build_rdol_model(num_classes,
                                      finetune=finetune,
                                      tune_layers=tune_layers)
 
-    # Block 1 - RGB
-    input_tensor1 = Input(shape=time_dist_shape, name="RGB Input")
-    efficient_layer1 = TimeDistributed(efficient_net, name=f"EfficientNetB{model_num}_RGB")(input_tensor1)
+    # Blocks: RGB, Depth, Optical Flow, Landmarks
+    input_tensor0 = Input(shape=time_dist_shape, name=f"{input_names[0]} Input")
+    efficient_layer0 = TimeDistributed(efficient_net, name=f"EfficientNetB{model_num}_{input_names[0]}")(input_tensor0)
     # Use pooling layer to reduce number of parameters by 12x versus Flatten
-    rgb_out = TimeDistributed(GlobalAveragePooling2D())(efficient_layer1)
+    out_0 = TimeDistributed(GlobalAveragePooling2D())(efficient_layer0)
 
-    # Block 2 - DEPTH
-    input_tensor2 = Input(shape=time_dist_shape, name="DEPTH Input")
-    efficient_layer2 = TimeDistributed(efficient_net, name=f"EfficientNetB{model_num}_DEPTH")(input_tensor2)
-    depth_out = TimeDistributed(GlobalAveragePooling2D())(efficient_layer2)
+    input_tensor1 = Input(shape=time_dist_shape, name=f"{input_names[1]} Input")
+    efficient_layer1 = TimeDistributed(efficient_net, name=f"EfficientNetB{model_num}_{input_names[1]}")(input_tensor1)
+    out_1 = TimeDistributed(GlobalAveragePooling2D())(efficient_layer1)
 
-    # Block 3 - OPTICAL
-    input_tensor3 = Input(shape=time_dist_shape, name="OPTICAL Input")
-    efficient_layer3 = TimeDistributed(efficient_net, name=f"EfficientNetB{model_num}_OPTICAL")(input_tensor3)
-    optical_out = TimeDistributed(GlobalAveragePooling2D())(efficient_layer3)
+    input_tensor2 = Input(shape=time_dist_shape, name=f"{input_names[2]} Input")
+    efficient_layer2 = TimeDistributed(efficient_net, name=f"EfficientNetB{model_num}_{input_names[2]}")(input_tensor2)
+    out_2 = TimeDistributed(GlobalAveragePooling2D())(efficient_layer2)
 
-    # Block 4 - LANDMARKS
-    input_tensor4 = Input(shape=time_dist_shape, name="LANDMARKS Input")
-    efficient_layer4 = TimeDistributed(efficient_net, name=f"EfficientNetB{model_num}_LANDMARKS")(input_tensor4)
-    landmark_out = TimeDistributed(GlobalAveragePooling2D())(efficient_layer4)
+    input_tensor3 = Input(shape=time_dist_shape, name=f"{input_names[3]} Input")
+    efficient_layer3 = TimeDistributed(efficient_net, name=f"EfficientNetB{model_num}_{input_names[3]}")(input_tensor3)
+    out_3 = TimeDistributed(GlobalAveragePooling2D())(efficient_layer3)
 
     # MERGE
-    merged_out = concatenate([rgb_out, depth_out, optical_out, landmark_out])
+    merged_out = concatenate([out_0, out_1, out_2, out_3])
 
     # LSTM Sequence Layer
     if num_lstm == 2:
@@ -125,46 +123,45 @@ def build_rdol_model(num_classes,
     output = Dense(num_classes, activation='softmax')(fc_out)
 
     # Compile with Adam
-    model = Model([input_tensor1, input_tensor2, input_tensor3, input_tensor4], output)
+    model = Model([input_tensor0, input_tensor1, input_tensor2, input_tensor3], output)
     model.compile('adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
     return model
 
 
-def build_rol_model(num_classes,
-                     model_num=0,
-                     input_shape=(224, 224, 3),
-                     time_dist_shape=(None, 224, 224, 3),
-                     dropout=0.5,
-                     dense_n=128,
-                     num_lstm=1,
-                     lstm_n=256,
-                     finetune=False,
-                     tune_layers=3):
+def build_three_model(num_classes,
+                      input_names,
+                      model_num=0,
+                      input_shape=(224, 224, 3),
+                      time_dist_shape=(None, 224, 224, 3),
+                      dropout=0.5,
+                      dense_n=128,
+                      num_lstm=1,
+                      lstm_n=256,
+                      finetune=False,
+                      tune_layers=3):
     # Only using as inference here
     efficient_net = get_efficientnet(model_num=0,
                                      input_size=input_shape,
                                      finetune=finetune,
                                      tune_layers=tune_layers)
 
-    # Block 1 - RGB
-    input_tensor1 = Input(shape=time_dist_shape, name="RGB Input")
-    efficient_layer1 = TimeDistributed(efficient_net, name=f"EfficientNetB{model_num}_RGB")(input_tensor1)
+    # 3 Input Blocks
+    input_tensor0 = Input(shape=time_dist_shape, name=f"{input_names[0]} Input")
+    efficient_layer0 = TimeDistributed(efficient_net, name=f"EfficientNetB{model_num}_{input_names[0]}")(input_tensor0)
     # Use pooling layer to reduce number of parameters by 12x versus Flatten
-    rgb_out = TimeDistributed(GlobalAveragePooling2D())(efficient_layer1)
+    out_0 = TimeDistributed(GlobalAveragePooling2D())(efficient_layer0)
 
-    # Block 2 - OPTICAL
-    input_tensor2 = Input(shape=time_dist_shape, name="OPTICAL Input")
-    efficient_layer2 = TimeDistributed(efficient_net, name=f"EfficientNetB{model_num}_OPTICAL")(input_tensor2)
-    optical_out = TimeDistributed(GlobalAveragePooling2D())(efficient_layer2)
+    input_tensor1 = Input(shape=time_dist_shape, name=f"{input_names[1]} Input")
+    efficient_layer1 = TimeDistributed(efficient_net, name=f"EfficientNetB{model_num}_{input_names[1]}")(input_tensor1)
+    out_1 = TimeDistributed(GlobalAveragePooling2D())(efficient_layer1)
 
-    # Block 3 - LANDMARKS
-    input_tensor3 = Input(shape=time_dist_shape, name="LANDMARKS Input")
-    efficient_layer3 = TimeDistributed(efficient_net, name=f"EfficientNetB{model_num}_LANDMARKS")(input_tensor3)
-    landmark_out = TimeDistributed(GlobalAveragePooling2D())(efficient_layer3)
+    input_tensor2 = Input(shape=time_dist_shape, name=f"{input_names[2]} Input")
+    efficient_layer2 = TimeDistributed(efficient_net, name=f"EfficientNetB{model_num}_{input_names[2]}")(input_tensor2)
+    out_2 = TimeDistributed(GlobalAveragePooling2D())(efficient_layer2)
 
     # MERGE
-    merged_out = concatenate([rgb_out, optical_out, landmark_out])
+    merged_out = concatenate([out_0, out_1, out_2])
 
     # LSTM Sequence Layer
     if num_lstm == 2:
@@ -177,7 +174,54 @@ def build_rol_model(num_classes,
     output = Dense(num_classes, activation='softmax')(fc_out)
 
     # Compile with Adam
-    model = Model([input_tensor1, input_tensor2, input_tensor3], output)
+    model = Model([input_tensor0, input_tensor1, input_tensor2], output)
+    model.compile('adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
+    return model
+
+
+def build_two_model(num_classes,
+                    input_names,
+                    model_num=0,
+                    input_shape=(224, 224, 3),
+                    time_dist_shape=(None, 224, 224, 3),
+                    dropout=0.5,
+                    dense_n=128,
+                    num_lstm=1,
+                    lstm_n=256,
+                    finetune=False,
+                    tune_layers=3):
+    # Only using as inference here
+    efficient_net = get_efficientnet(model_num=0,
+                                     input_size=input_shape,
+                                     finetune=finetune,
+                                     tune_layers=tune_layers)
+
+    # 3 Input Blocks
+    input_tensor0 = Input(shape=time_dist_shape, name=f"{input_names[0]} Input")
+    efficient_layer0 = TimeDistributed(efficient_net, name=f"EfficientNetB{model_num}_{input_names[0]}")(input_tensor0)
+    # Use pooling layer to reduce number of parameters by 12x versus Flatten
+    out_0 = TimeDistributed(GlobalAveragePooling2D())(efficient_layer0)
+
+    input_tensor1 = Input(shape=time_dist_shape, name=f"{input_names[1]} Input")
+    efficient_layer1 = TimeDistributed(efficient_net, name=f"EfficientNetB{model_num}_{input_names[1]}")(input_tensor1)
+    out_1 = TimeDistributed(GlobalAveragePooling2D())(efficient_layer1)
+
+    # MERGE
+    merged_out = concatenate([out_0, out_1])
+
+    # LSTM Sequence Layer
+    if num_lstm == 2:
+        lstm_start = LSTM(lstm_n, return_sequences=True)(merged_out)
+        lstm_out = LSTM(lstm_n)(lstm_start)
+    else:
+        lstm_out = LSTM(lstm_n)(merged_out)
+    fc = Dense(dense_n, activation='relu')(lstm_out)
+    fc_out = Dropout(dropout)(fc)
+    output = Dense(num_classes, activation='softmax')(fc_out)
+
+    # Compile with Adam
+    model = Model([input_tensor0, input_tensor1], output)
     model.compile('adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
     return model
@@ -195,8 +239,10 @@ def get_multi_model(num_classes,
                     finetune=False,
                     tune_layers=3):
     # Full models
-    if mode == 0 or mode == 1:
-        return build_rdol_model(num_classes,
+    if mode == 0:
+        input_names = ["rgb", "depth", "optical", "landmarks"]
+        return build_four_model(num_classes,
+                                input_names,
                                 model_num,
                                 input_shape,
                                 time_dist_shape,
@@ -206,8 +252,35 @@ def get_multi_model(num_classes,
                                 lstm_n,
                                 finetune,
                                 tune_layers)
-    elif mode == 2 or mode == 3:
-        return build_rol_model(num_classes,
+    elif mode in [1, 2, 3]:
+        input_names = []
+        if mode == 1:
+            input_names = ["rgb", "optical", "landmarks"]
+        elif mode == 2:
+            input_names = ["rgb", "depth", "landmarks"]
+        elif mode == 3:
+            input_names = ["rgb", "depth", "optical"]
+        return build_three_model(num_classes,
+                                 input_names,
+                                 model_num,
+                                 input_shape,
+                                 time_dist_shape,
+                                 dropout,
+                                 dense_n,
+                                 num_lstm,
+                                 lstm_n,
+                                 finetune,
+                                 tune_layers)
+    elif mode in [4, 5, 6]:
+        input_names = []
+        if mode == 4:
+            input_names = ["rgb", "depth"]
+        elif mode == 5:
+            input_names = ["rgb", "landmarks"]
+        elif mode == 6:
+            input_names = ["rgb", "optical"]
+        return build_two_model(num_classes,
+                               input_names,
                                model_num,
                                input_shape,
                                time_dist_shape,
@@ -227,31 +300,50 @@ def get_datasets(input_path: Path, config, mode: int):
     depth_val = Path(input_path, config['depthFolder'], "val")
     landmarks_train = Path(input_path, config['landmarkFolder'], "train")
     landmarks_val = Path(input_path, config['landmarkFolder'], "val")
+    # Not testing farnebeck for now.
     optical_train = Path(input_path, config['opticalFolder'], "train")
     optical_val = Path(input_path, config['opticalFolder'], "val")
     optical_rlof_train = Path(input_path, config['opticalRLOFFolder'], "train")
     optical_rlof_val = Path(input_path, config['opticalRLOFFolder'], "val")
 
+    # Full models = 0 for AUTSL, 1 for ELAR
     if mode == 0:
-        # RGB + DEPTH + OPTICALF + LANDMARKS
-        print(f"Dataset mode {mode}: RGB+DEPTH+OPTICALF+LANDMARKS")
-        return [rgb_train, depth_train, optical_train, landmarks_train], \
-               [rgb_val, depth_val, optical_val, landmarks_val]
-    elif mode == 1:
         # RGB + DEPTH + OPTICALRLOF + LANDMARKS
         print(f"Dataset mode {mode}: RGB+DEPTH+OPTICALRLOF+LANDMARKS")
         return [rgb_train, depth_train, optical_rlof_train, landmarks_train], \
                [rgb_val, depth_val, optical_rlof_val, landmarks_val]
-    elif mode == 2:
-        # RGB + OPTICALF + LANDMARKS
-        print(f"Dataset mode {mode}: RGB+OPTICALF+LANDMARKS")
-        return [rgb_train, optical_train, landmarks_train], \
-               [rgb_val, optical_val, landmarks_val]
-    elif mode == 3:
+    elif mode == 1:
         # RGB + OPTICALRLOF + LANDMARKS
         print(f"Dataset mode {mode}: RGB+OPTICALRLOF+LANDMARKS")
         return [rgb_train, optical_rlof_train, landmarks_train], \
                [rgb_val, optical_rlof_val, landmarks_val]
+    # Other combinations for AUTSL
+    elif mode == 2:
+        # RGB + DEPTH + LANDMARKS
+        print(f"Dataset mode {mode}: RGB+DEPTH+LANDMARKS")
+        return [rgb_train, depth_train, landmarks_train], \
+               [rgb_val, depth_val, landmarks_val]
+    elif mode == 3:
+        # RGB + DEPTH + OPTICALRLOF
+        print(f"Dataset mode {mode}: RGB+DEPTH+OPTICALRLOF")
+        return [rgb_train, depth_train, optical_rlof_train], \
+               [rgb_val, depth_val, optical_rlof_val]
+    elif mode == 4:
+        # RGB + DEPTH
+        print(f"Dataset mode {mode}: RGB+DEPTH")
+        return [rgb_train, depth_train], \
+               [rgb_val, depth_val]
+    elif mode == 5:
+        # RGB + LANDMARKS
+        print(f"Dataset mode {mode}: RGB+LANDMARKS")
+        return [rgb_train, landmarks_train], \
+               [rgb_val, landmarks_val]
+    elif mode == 6:
+        # RGB + OPTICALRLOF
+        print(f"Dataset mode {mode}: RGB+OPTICALRLOF")
+        return [rgb_train, optical_rlof_train], \
+               [rgb_val, optical_rlof_val]
+    # Other combinations for ELAR can use mode 5, 6
 
 
 def run_trials(input_path: Path,
