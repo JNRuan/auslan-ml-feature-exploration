@@ -67,19 +67,25 @@ def create_hand_landmarks(input: str, output: str, dataset: str):
 
 def process_hand_landmarks(output: str, label_path: str, label_name: str, csv_path: str):
     image_list = [img for img in Path(label_path).glob('*.jpg')]
+    image_out_path = Path(output, label_name)
+    if not image_out_path.exists():
+        os.makedirs(image_out_path)
     pbar = tqdm(image_list)
     print(f"Found: {len(image_list)} images.")
 
     with mp_hands.Hands(
             static_image_mode=True,
             max_num_hands=2,
-            min_detection_confidence=0.3) as hands:
+            min_detection_confidence=0.25) as hands:
         for file in pbar:
+            image_file_path = Path(image_out_path, file.name)
             # Mediapipe needs image flipped for processing
             image = cv2.flip(cv2.imread(str(file)), 1)
             results = hands.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
 
             if not results.multi_hand_landmarks:
+                # Write OG image anyway.
+                cv2.imwrite(str(image_file_path), cv2.flip(image, 1))
                 continue
             annotated_image = image.copy()
 
@@ -92,10 +98,7 @@ def process_hand_landmarks(output: str, label_path: str, label_name: str, csv_pa
                     mp_drawing_styles.get_default_hand_landmarks_style(),
                     mp_drawing_styles.get_default_hand_connections_style()
                 )
-                image_out_path = Path(output, label_name)
-                if not image_out_path.exists():
-                    os.makedirs(image_out_path)
-                image_file_path = Path(image_out_path, file.name)
+
                 cv2.imwrite(str(image_file_path), cv2.flip(annotated_image, 1))
 
                 # Handle landmarks raw csv data
