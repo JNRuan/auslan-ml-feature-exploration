@@ -13,8 +13,8 @@
   "numLstm": 1,
   "lstm": 512,
   "dense": 512,
-  "dropout": 0.5,
+  "dropout": 0.4,
   "numClasses": 20,
-  "maxEpochs": 50,
-  "patience": 5
+  "maxEpochs": 100,
+  "patience": 10
 }
