@@ -189,7 +189,8 @@ class MultiSequenceGenerator(tf.keras.utils.Sequence):
             gen.shuffle_dataset_from_parent(self.df)
 
     def on_epoch_end(self):
-        self.shuffle_datasets()
+        if self.shuffle:
+            self.shuffle_datasets()
 
     def __len__(self):
         """Length of all datasets should match first generator and be consistent"""

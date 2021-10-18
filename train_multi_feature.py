@@ -24,56 +24,6 @@ from models.model_utils import get_generator, get_multi_generators, set_csv_call
 ################################################################################
 
 
-def multi_rgb_depth_model(num_classes,
-                          model_num=0,
-                          input_shape=(224, 224, 3),
-                          time_dist_shape=(None, 224, 224, 3),
-                          dropout=0.5,
-                          dense_n=128,
-                          num_lstm=1,
-                          lstm_n=256,
-                          finetune=False,
-                          tune_layers=3):
-    """
-    Creates an RGB and Depth model. Could be a generic function but not a priority.
-    """
-    efficient_net = get_efficientnet(model_num=0,
-                                     input_size=input_shape,
-                                     finetune=finetune,
-                                     tune_layers=tune_layers)
-
-    # Transfer Layers
-    # Block 1 - RGB
-    input_tensor1 = Input(shape=time_dist_shape, name="RGB Input")
-    efficient_layer1 = TimeDistributed(efficient_net, name=f"EfficientNetB{model_num}_RGB")(input_tensor1)
-    # Use pooling layer to reduce number of parameters by 12x versus Flatten
-    efficient_out1 = TimeDistributed(GlobalAveragePooling2D())(efficient_layer1)
-
-    # Block 2 - DEPTH
-    input_tensor2 = Input(shape=time_dist_shape, name="DEPTH Input")
-    efficient_layer2 = TimeDistributed(efficient_net, name=f"EfficientNetB{model_num}_DEPTH")(input_tensor2)
-    efficient_out2 = TimeDistributed(GlobalAveragePooling2D())(efficient_layer2)
-
-    # MERGE
-    merged_out = concatenate([efficient_out1, efficient_out2])
-
-    # LSTM Sequence Layer
-    if num_lstm == 2:
-        lstm_start = LSTM(lstm_n, return_sequences=True)(merged_out)
-        lstm_out = LSTM(lstm_n)(lstm_start)
-    else:
-        lstm_out = LSTM(lstm_n)(merged_out)
-    fc = Dense(dense_n, activation='relu')(lstm_out)
-    fc_out = Dropout(dropout)(fc)
-    output = Dense(num_classes, activation='softmax')(fc_out)
-
-    # Compile with Adam
-    model = Model([input_tensor1, input_tensor2], output)
-    model.compile('adam', loss='categorical_crossentropy', metrics=['accuracy'])
-
-    return model
-
-
 def build_four_model(num_classes,
                      input_names,
                      model_num=0,
@@ -197,7 +147,7 @@ def build_two_model(num_classes,
                                      finetune=finetune,
                                      tune_layers=tune_layers)
 
-    # 3 Input Blocks
+    # 2 Input Blocks
     input_tensor0 = Input(shape=time_dist_shape, name=f"{input_names[0]} Input")
     efficient_layer0 = TimeDistributed(efficient_net, name=f"EfficientNetB{model_num}_{input_names[0]}")(input_tensor0)
     # Use pooling layer to reduce number of parameters by 12x versus Flatten
@@ -241,6 +191,7 @@ def get_multi_model(num_classes,
     # Full models
     if mode == 0:
         input_names = ["rgb", "depth", "optical", "landmarks"]
+        print(f"Build model for {input_names}")
         return build_four_model(num_classes,
                                 input_names,
                                 model_num,
@@ -260,6 +211,7 @@ def get_multi_model(num_classes,
             input_names = ["rgb", "depth", "landmarks"]
         elif mode == 3:
             input_names = ["rgb", "depth", "optical"]
+        print(f"Build model for {input_names}")
         return build_three_model(num_classes,
                                  input_names,
                                  model_num,
@@ -279,6 +231,7 @@ def get_multi_model(num_classes,
             input_names = ["rgb", "landmarks"]
         elif mode == 6:
             input_names = ["rgb", "optical"]
+        print(f"Build model for {input_names}")
         return build_two_model(num_classes,
                                input_names,
                                model_num,

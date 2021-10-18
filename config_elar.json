@@ -2,17 +2,19 @@
   "trainLabels": "train_labels_10classes.csv",
   "valLabels": "val_labels_10classes.csv",
   "testLabels": "test_labels_10classes.csv",
+  "depthFolder": "frames_depth_20",
   "rgbFolder": "frames_rgb_10",
   "landmarkFolder": "frames_landmarks_conf25_10",
+  "opticalFolder": "frames_optical_20",
   "opticalRLOFFolder": "frames_optical_rlof_10",
   "fineTune": false,
-  "batchSize": 8,
+  "batchSize": 4,
   "inputDim": 224,
   "numLstm": 1,
   "lstm": 512,
   "dense": 512,
-  "dropout": 0.5,
+  "dropout": 0.4,
   "numClasses": 10,
   "maxEpochs": 100,
-  "patience": 5
+  "patience": 10
 }
