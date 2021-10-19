@@ -123,11 +123,11 @@ def main():
                             '--resize',
                             help="Set 1 if resize of images desired, good for inconsistent datasets.",
                             default=0)
-    arg_parser.add_argument('-w',
+    arg_parser.add_argument('-iw',
                             '--width',
                             help="Set width for resize",
                             default=512)
-    arg_parser.add_argument('-h',
+    arg_parser.add_argument('-ih',
                             '--height',
                             help="Set height for resize",
                             default=512)
