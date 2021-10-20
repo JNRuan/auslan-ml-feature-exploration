@@ -3,7 +3,7 @@
 # TODO: This code could be made more generic to limit code reuse.
 ################################################################################
 from pathlib import Path
-from tensorflow.keras.layers import concatenate, Dense, Dropout, Flatten, GlobalAveragePooling2D, \
+from tensorflow.keras.layers import Add, concatenate, Dense, Dropout, Flatten, GlobalAveragePooling2D, \
     Input, LSTM, TimeDistributed
 from tensorflow.keras import Model
 
