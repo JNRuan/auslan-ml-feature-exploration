@@ -4,7 +4,7 @@
   "testLabels": "test_labels_10classes.csv",
   "depthFolder": "frames_depth_20",
   "rgbFolder": "frames_rgb_10",
-  "landmarkFolder": "frames_landmarks_conf25_10",
+  "landmarkFolder": "frames_full_landmarks_bg_10",
   "opticalFolder": "frames_optical_20",
   "opticalRLOFFolder": "frames_optical_rlof_10",
   "fineTune": false,

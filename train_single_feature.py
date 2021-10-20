@@ -162,9 +162,9 @@ def run_trials(input_path: Path, output_path: Path, num_trials: int, trial_start
                                      num_lstm=num_lstm,
                                      lstm_n=lstm_units)
 
-        run_log = f'training_rgb_{trial_num:03}.csv'
-        run_model_summary = f'training_rgb_{trial_num:03}_model_summary.txt'
-        model_checkpoint = f'training_rgb_{trial_num:03}.best.hdf5'
+        run_log = f'single_{trial_num:03}.csv'
+        run_model_summary = f'single_{trial_num:03}_model_summary.txt'
+        model_checkpoint = f'single_{trial_num:03}.best.hdf5'
 
         with open(Path(output_runs_path, run_model_summary), 'w') as f:
             model.summary(print_fn=lambda x: f.write(x + '\n'))
