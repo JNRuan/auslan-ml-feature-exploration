@@ -3,26 +3,28 @@
 Honours Project code repository for exploring Auslan features in the context of Machine Learning.
 
 ## Configuration
-Create a `config.json` file in the root folder containing:
+Folders and configuration was setup with a simple config file that is loaded when scripts are run. For example:
 
 ```json
 {
-  "dataRoot": "path/to/data",
-  "dataFolders": {
-    "dataRGB": "rgb",
-    "dataDepth": "depth",
-    "dataLandmarks": "hand_landmarks",
-    "dataMotion": "motion_history",
-    "dataTrain": "train",
-    "dataVal": "val",
-    "dataTest": "test"
-  },
-  "trainLabels": "train_labels_en.csv",
-  "valLabels": "val_labels_en.csv",
-  "testLabels": "test_labels_en.csv",
-  "maxSeqLen": 50,
-  "batchSize": 32,
-  "inputDim": 224
+  "trainLabels": "train_labels_20classes.csv",
+  "valLabels": "val_labels_20classes.csv",
+  "testLabels": "test_labels_20classes.csv",
+  "depthFolder": "frames_depth_20",
+  "rgbFolder": "frames_rgb_20",
+  "landmarkFolder": "frames_landmarks_2_20",
+  "opticalFolder": "frames_optical_20",
+  "opticalRLOFFolder": "frames_optical_rlof_20",
+  "fineTune": false,
+  "batchSize": 8,
+  "inputDim": 224,
+  "numLstm": 1,
+  "lstm": 512,
+  "dense": 512,
+  "dropout": 0.4,
+  "numClasses": 20,
+  "maxEpochs": 100,
+  "patience": 10
 }
 ```
 **Where data is setup like:**
@@ -39,12 +41,6 @@ Create a `config.json` file in the root folder containing:
 │  ├─ ...other_words/
 train_labels.csv
 ```
-`maxSeqLen` allows for padding up to max sequence. `data_utils.py` contains some useful 
-helpers to calculate this. By default, this is set to 50.
-
-`inputDim` based on model requirements for transfer learning (e.g., resnet50, efficientNet, etc)
-
-`batchSize` is the batchsize set for model training, default 32.
 
 ## Useful Tools, Scripts, etc
 ### AUTSL videos to rgb frames
